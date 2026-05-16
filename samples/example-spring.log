@@ -1,0 +1,8 @@
+Spring Boot DB 연결 오류 봐줘.
+
+spring.datasource.url=jdbc:mysql://prod-db.company.internal:3306/customer_payment
+spring.datasource.username=admin
+spring.datasource.password=Qwer1234!
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+
+고객 결제 테이블에서 timeout이 발생하고 있어.
