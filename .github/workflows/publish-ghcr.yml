@@ -22,8 +22,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/safeprompt-guard-backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/safeprompt-guard-frontend
 
 jobs:
   build-and-push:
@@ -35,6 +33,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Lowercase registry owner
+        shell: bash
+        run: |
+          owner="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+          echo "OWNER=${owner}" >> "$GITHUB_ENV"
+          echo "BACKEND_IMAGE=ghcr.io/${owner}/safeprompt-guard-backend" >> "$GITHUB_ENV"
+          echo "FRONTEND_IMAGE=ghcr.io/${owner}/safeprompt-guard-frontend" >> "$GITHUB_ENV"
 
       - name: Set image tag
         id: meta
