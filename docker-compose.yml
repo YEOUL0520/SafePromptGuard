@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      OLLAMA_BASE: ${OLLAMA_BASE:-http://host.docker.internal:11434}
+      GEMMA_MODEL: ${GEMMA_MODEL:-gemma2:2b}
+      SAFE_PROMPT_DB_PATH: /data/safeprompt.db
+    volumes:
+      - safeprompt-data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  safeprompt-data:

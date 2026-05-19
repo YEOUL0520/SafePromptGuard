@@ -50,7 +50,14 @@ export default function ArtifactPanel({
 
       <div className="artifact-body">
         {tab === 'masked' && (
-          <pre className="artifact-code">{masked || '(내용 없음)'}</pre>
+          <>
+            {result.source_kind === 'notebook' && (
+              <p className="artifact-note">
+                입력 셀(source)만 검사·마스킹했습니다. outputs·metadata는 직접 확인하세요.
+              </p>
+            )}
+            <pre className="artifact-code">{masked || '(내용 없음)'}</pre>
+          </>
         )}
         {tab === 'prompt' && (
           <>
@@ -101,6 +108,15 @@ export default function ArtifactPanel({
             onClick={() => downloadText('masked_output.txt', masked)}
           >
             <Download size={14} /> 저장
+          </button>
+        )}
+        {tab === 'masked' && result.masked_notebook_json && (
+          <button
+            type="button"
+            className="msg-btn msg-btn--primary"
+            onClick={() => downloadText('masked_notebook.ipynb', result.masked_notebook_json)}
+          >
+            <Download size={14} /> 마스킹 노트북 (.ipynb)
           </button>
         )}
       </footer>

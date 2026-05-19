@@ -1,0 +1,19 @@
+{
+  "extensions": [
+    ".txt",
+    ".log",
+    ".env",
+    ".py",
+    ".python",
+    ".ipynb",
+    ".java",
+    ".js",
+    ".ts",
+    ".json",
+    ".yml",
+    ".yaml",
+    ".properties",
+    ".md"
+  ],
+  "notebook_extensions": [".ipynb"]
+}

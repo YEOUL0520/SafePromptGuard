@@ -1,0 +1,19 @@
+# repo 루트 빌드 컨텍스트용 (GHCR publish)
+.git/
+.github/
+**/.venv/
+**/venv/
+**/node_modules/
+**/dist/
+**/__pycache__/
+**/*.pyc
+**/*.db
+backend/data/
+docs/
+samples/
+agent-transcripts/
+*.md
+!shared/README.md
+.env
+.env.*
+!.env.prod.example

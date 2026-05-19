@@ -2,7 +2,14 @@ from models.schemas import Finding, ScanResponse
 from services.regex_scanner import scan_by_regex
 from services.rule_scanner import scan_by_rules
 from services import gemma_analyzer
-from services.masking import apply_masking
+from services.masking import apply_masking, coalesce_span_findings
+from services.notebook_loader import (
+    CellSegment,
+    build_masked_notebook,
+    enrich_findings_with_cells,
+)
+
+NotebookContext = tuple[dict, list[CellSegment]] | None
 
 SOURCE_ORDER = {
     "gemma": 0,
@@ -89,8 +96,17 @@ def _detected_items(findings: list[Finding]) -> list[str]:
     return items
 
 
-def _recommendations(risk_level: str, findings: list[Finding]) -> list[str]:
+def _recommendations(
+    risk_level: str,
+    findings: list[Finding],
+    *,
+    notebook: bool = False,
+) -> list[str]:
     recs: list[str] = []
+    if notebook:
+        recs.append(
+            "노트북 입력 셀(source)만 검사했습니다. outputs·metadata는 수동으로 확인하세요."
+        )
     if risk_level == "높음":
         recs.append("외부 AI에 입력하기 전 반드시 민감정보를 제거해야 합니다.")
         recs.append("마스킹된 안전 프롬프트만 복사하여 사용하세요.")
@@ -107,7 +123,16 @@ def _recommendations(risk_level: str, findings: list[Finding]) -> list[str]:
     return recs
 
 
-async def run_scan(text: str, use_gemma: bool = True, filename: str | None = None) -> ScanResponse:
+async def run_scan(
+    text: str,
+    use_gemma: bool = True,
+    filename: str | None = None,
+    notebook_ctx: NotebookContext = None,
+) -> ScanResponse:
+    nb: dict | None = None
+    segments: list[CellSegment] | None = None
+    if notebook_ctx:
+        nb, segments = notebook_ctx
     regex_findings = scan_by_regex(text)
     rule_findings = scan_by_rules(text, filename)
     all_findings = _dedupe_findings(regex_findings + rule_findings)
@@ -123,9 +148,20 @@ async def run_scan(text: str, use_gemma: bool = True, filename: str | None = Non
         gemma_used = True
 
     all_findings = _sort_findings(all_findings)
+    line_findings = [f for f in all_findings if f.start is None or f.end is None]
+    span_findings = coalesce_span_findings(
+        [f for f in all_findings if f.start is not None and f.end is not None]
+    )
+    all_findings = _sort_findings(span_findings + line_findings)
+
+    if segments:
+        all_findings = enrich_findings_with_cells(all_findings, segments, text)
 
     risk_level, risk_score = _compute_risk(all_findings, gemma_level)
     masked_text = apply_masking(text, all_findings)
+    masked_notebook_json: str | None = None
+    if nb and segments:
+        masked_notebook_json = build_masked_notebook(nb, segments, all_findings)
 
     safe_prompt: str
     if gemma_used:
@@ -139,9 +175,14 @@ async def run_scan(text: str, use_gemma: bool = True, filename: str | None = Non
         risk_score=risk_score,
         findings=all_findings,
         detected_items=_detected_items(all_findings),
-        recommendations=_recommendations(risk_level, all_findings),
+        recommendations=_recommendations(
+            risk_level, all_findings, notebook=bool(segments)
+        ),
         masked_text=masked_text,
         safe_prompt=safe_prompt,
         gemma_available=gemma_available,
         gemma_used=gemma_used,
+        source_kind="notebook" if segments else "text",
+        masked_notebook_json=masked_notebook_json,
+        notebook_cell_count=len(segments) if segments else None,
     )

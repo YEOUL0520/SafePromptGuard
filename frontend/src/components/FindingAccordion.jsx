@@ -13,6 +13,13 @@ function sourceKo(s) {
   return s
 }
 
+function cellTypeKo(t) {
+  if (t === 'code') return '코드'
+  if (t === 'markdown') return '마크다운'
+  if (t === 'raw') return 'raw'
+  return t
+}
+
 export default function FindingAccordion({
   findings = [],
   expandedIndices = [],
@@ -41,7 +48,14 @@ export default function FindingAccordion({
                   <span className="source-pill">{sourceKo(f.source)}</span>
                 </span>
                 <span className="finding-accordion-meta">
-                  {f.line ? `\uC904 ${f.line}` : ''}
+                  {typeof f.cell_index === 'number' && (
+                    <>
+                      {'\uC140 '}
+                      {f.cell_index + 1}
+                      {f.cell_type ? ` \u00B7 ${cellTypeKo(f.cell_type)}` : ''}
+                    </>
+                  )}
+                  {f.line ? `${typeof f.cell_index === 'number' ? ' \u00B7 ' : ''}\uC904 ${f.line}` : ''}
                   {typeof f.confidence === 'number'
                     ? ` \u00B7 \uC2E0\uB8B0\uB3C4 ${Math.round(f.confidence * 100)}%`
                     : ''}

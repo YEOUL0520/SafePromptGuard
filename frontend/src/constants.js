@@ -1,3 +1,10 @@
+import fileUploadPolicy from '../../shared/allowed_extensions.json'
+
+/** 업로드 허용 확장자 — shared/allowed_extensions.json 과 동기화 */
+export const ALLOWED_FILE_EXTENSIONS = fileUploadPolicy.extensions
+export const ACCEPT_FILE_TYPES = fileUploadPolicy.extensions.join(',')
+export const NOTEBOOK_EXTENSIONS = new Set(fileUploadPolicy.notebook_extensions || ['.ipynb'])
+
 /** 외부 반입 시나리오 — UI 라벨 (검사 로직은 동일) */
 export const IMPORT_CONTEXTS = [
   {

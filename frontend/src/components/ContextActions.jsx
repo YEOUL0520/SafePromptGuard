@@ -1,9 +1,23 @@
 import { downloadText, buildCollabSummary, GIT_CHECKLIST, SHARE_CHECKLIST } from '../utils/export'
 
+function NotebookDownloadButton({ result }) {
+  if (!result?.masked_notebook_json) return null
+  return (
+    <button
+      type="button"
+      className="msg-btn"
+      onClick={() => downloadText('masked_notebook.ipynb', result.masked_notebook_json)}
+    >
+      마스킹 노트북 (.ipynb)
+    </button>
+  )
+}
+
 export default function ContextActions({ contextId, result, onCopy }) {
   if (!result) return null
 
   const masked = result.masked_text || ''
+  const notebookBtn = <NotebookDownloadButton result={result} />
 
   if (contextId === 'git') {
     return (
@@ -22,6 +36,7 @@ export default function ContextActions({ contextId, result, onCopy }) {
         >
           커밋 전 체크리스트 복사
         </button>
+        {notebookBtn}
       </div>
     )
   }
@@ -43,6 +58,7 @@ export default function ContextActions({ contextId, result, onCopy }) {
         >
           공유 전 체크리스트 복사
         </button>
+        {notebookBtn}
       </div>
     )
   }
@@ -58,8 +74,13 @@ export default function ContextActions({ contextId, result, onCopy }) {
         >
           협업 채널용 요약 복사
         </button>
+        {notebookBtn}
       </div>
     )
+  }
+
+  if (result.masked_notebook_json) {
+    return <div className="context-actions">{notebookBtn}</div>
   }
 
   return null

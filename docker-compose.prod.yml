@@ -1,0 +1,31 @@
+# 심사·데모용: GHCR에 올린 이미지를 pull 해서 실행 (로컬 빌드 없음)
+# 사용: scripts/start-judge.bat  또는  ./scripts/start-judge.sh
+# 이미지 태그·레지스트리: .env.prod ( .env.prod.example 참고)
+
+services:
+  backend:
+    image: ${SAFE_PROMPT_BACKEND_IMAGE}
+    pull_policy: always
+    ports:
+      - "${BACKEND_PORT:-8001}:8001"
+    environment:
+      OLLAMA_BASE: ${OLLAMA_BASE:-http://host.docker.internal:11434}
+      GEMMA_MODEL: ${GEMMA_MODEL:-gemma2:2b}
+      SAFE_PROMPT_DB_PATH: /data/safeprompt.db
+    volumes:
+      - safeprompt-data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    image: ${SAFE_PROMPT_FRONTEND_IMAGE}
+    pull_policy: always
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  safeprompt-data:

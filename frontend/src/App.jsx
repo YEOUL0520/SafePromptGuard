@@ -13,7 +13,12 @@ import { SAMPLES, DEFAULT_SAMPLE_ID } from './samples'
 import { useTheme } from './hooks/useTheme'
 import { useSessions } from './hooks/useSessions'
 import { defaultArtifactTab } from './hooks/useArtifactPanel'
-import { IMPORT_CONTEXTS, MAX_FOLDER_FILES, MAX_FILE_BYTES } from './constants'
+import {
+  ACCEPT_FILE_TYPES,
+  IMPORT_CONTEXTS,
+  MAX_FOLDER_FILES,
+  MAX_FILE_BYTES,
+} from './constants'
 import Sidebar from './components/Sidebar'
 import ArtifactPanel from './components/ArtifactPanel'
 import ChatBubble from './components/ChatBubble'
@@ -510,7 +515,7 @@ export default function App() {
                   <input
                     ref={fileRef}
                     type="file"
-                    accept=".txt,.log,.env,.py,.java,.js,.ts,.json,.yml,.yaml,.properties,.md"
+                    accept={ACCEPT_FILE_TYPES}
                     onChange={handleFile}
                   />
                 </label>
